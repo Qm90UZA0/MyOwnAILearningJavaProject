@@ -1,78 +1,19 @@
-package ai.util;
+package ai.model;
 
-import ai.model.Fruit;
-import ai.model.House;
-
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-public class FileUtil {
-	public static List<Fruit> loadFruits(String filePath) {
-		List<Fruit> samples = new ArrayList<>();
-		
-		try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-			String line;
-			while ((line = reader.readLine()) != null) {
-				if (line.trim().isEmpty()) {
-					continue;
-				}
-				
-				String[] parts = line.split(",");
-				
-				if (parts.length != 3) {
-					System.out.println("跳过格式错误的行：" + line);
-					continue;
-				}
-				
-				samples.add(new Fruit(Double.parseDouble(parts[0]),
-						              Double.parseDouble(parts[1]),
-						              parts[2]));
-			}
-		} catch (FileNotFoundException e) {
-			System.out.println("文件不存在：" + filePath);
-		} catch (IOException e) {
-			System.out.println("读取文件时出错：" + e.getMessage());
-		} catch (NumberFormatException e) {
-			System.out.println("错误：数字格式不正确 - " + e.getMessage());
-		}
-		
-		return samples;
+public class House {
+	private double area;
+	private double price;
+	
+	public House() {}
+	public House(double a, double p) {
+		area = a;
+		price = p;
 	}
 	
-	public static List<House> loadHouse(String filePath) {
-		List<House> samples = new ArrayList<>();
-		
-		try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-			String line;
-			while ((line = reader.readLine()) != null) {
-				if (line.trim().isEmpty()) {
-					continue;
-				}
-				
-				String[] parts = line.split(",");
-				
-				if (parts.length != 2) {
-					System.out.println("跳过格式错误的行：" + line);
-					continue;
-				}
-				
-				samples.add(new House(Double.parseDouble(parts[0]),
-							          Double.parseDouble(parts[1])));
-			}
-		} catch (FileNotFoundException e) {
-			System.out.println("文件不存在：" + filePath);
-		} catch (IOException e) {
-			System.out.println("读取文件时出错：" + e.getMessage());
-		} catch (NumberFormatException e) {
-			System.out.println("错误：数字格式不正确 - " + e.getMessage());
-		}
-		
-		return samples;
-	}
+	public double getArea() {return area;}
+	public double getPrice() {return price;}
+	
+	public String toString() {return ("面积" + area + "㎡ → 价格" + price + "万元");}
 }
 /*
 ..........................................................................................................................

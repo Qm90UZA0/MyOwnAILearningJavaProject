@@ -1,77 +1,86 @@
-package ai.util;
+package ai.regression;
 
-import ai.model.Fruit;
 import ai.model.House;
+import ai.util.FileUtil;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Scanner;
 
-public class FileUtil {
-	public static List<Fruit> loadFruits(String filePath) {
-		List<Fruit> samples = new ArrayList<>();
-		
-		try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-			String line;
-			while ((line = reader.readLine()) != null) {
-				if (line.trim().isEmpty()) {
-					continue;
-				}
-				
-				String[] parts = line.split(",");
-				
-				if (parts.length != 3) {
-					System.out.println("跳过格式错误的行：" + line);
-					continue;
-				}
-				
-				samples.add(new Fruit(Double.parseDouble(parts[0]),
-						              Double.parseDouble(parts[1]),
-						              parts[2]));
-			}
-		} catch (FileNotFoundException e) {
-			System.out.println("文件不存在：" + filePath);
-		} catch (IOException e) {
-			System.out.println("读取文件时出错：" + e.getMessage());
-		} catch (NumberFormatException e) {
-			System.out.println("错误：数字格式不正确 - " + e.getMessage());
-		}
-		
-		return samples;
+public class LinearRegressor {
+	private List<House> samples;
+	private double w; //权重(斜率)
+	private double b; //偏置(截距)
+	
+	public LinearRegressor(List<House> samples) {
+		this.samples = samples;
+		w = 0;
+		b = 0;
 	}
 	
-	public static List<House> loadHouse(String filePath) {
-		List<House> samples = new ArrayList<>();
-		
-		try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-			String line;
-			while ((line = reader.readLine()) != null) {
-				if (line.trim().isEmpty()) {
-					continue;
-				}
+	public void train (double learningRate, int epochs) {
+		int n = samples.size();
+		for (int i=0; i<epochs; i++) {
+			double sumW = 0;
+			double sumB = 0;
+			double totalError = 0;
+			
+			for (House h : samples) {
+				double prediction = (w * h.getArea()) + b;
+				double error = prediction - h.getPrice();
 				
-				String[] parts = line.split(",");
-				
-				if (parts.length != 2) {
-					System.out.println("跳过格式错误的行：" + line);
-					continue;
-				}
-				
-				samples.add(new House(Double.parseDouble(parts[0]),
-							          Double.parseDouble(parts[1])));
+				totalError += Math.pow(error, 2);
+				sumW += error * h.getArea();
+				sumB += error;
 			}
-		} catch (FileNotFoundException e) {
-			System.out.println("文件不存在：" + filePath);
-		} catch (IOException e) {
-			System.out.println("读取文件时出错：" + e.getMessage());
-		} catch (NumberFormatException e) {
-			System.out.println("错误：数字格式不正确 - " + e.getMessage());
+
+			double w_gradient = (2.0 / n) * sumW;
+			double b_gradient = (2.0 / n) * sumB;
+			totalError = totalError / n;
+			
+			w = w - learningRate * w_gradient;
+			b = b - learningRate * b_gradient;
+			
+			if ((i+1) % 100 == 0) {
+				System.out.println("迭代次数: " + (i+1));
+				System.out.println("当前误差: " + totalError);
+			}
 		}
+	}
+	
+	public double predict(double area) {
+		return (w * area) + b;
+	}
+	
+	public void printModel() {
+		System.out.println("当前模型：价格 = " + w + " * 面积 + " + b);
+	}
+	
+	
+	public static void main(String[] args) {
+		List<House> samples = FileUtil.loadHouse("data/houses.txt");
+		LinearRegressor lr = new LinearRegressor(samples);
 		
-		return samples;
+		lr.train(0.0001, 1000);
+		lr.printModel();
+		
+		@SuppressWarnings("resource")
+		Scanner sc = new Scanner(System.in);
+		while (true) {
+			try {
+				System.out.println("===== 房价预测器 =====");
+				System.out.print("请输入面积(输入-1退出, 单位㎡):");
+				double area = sc.nextDouble();
+				if (area == -1) {
+					System.out.println("程序退出");
+					break;
+				}
+				System.out.println("预测房价为: " + lr.predict(area) + "万元\n");
+			} catch (InputMismatchException e) {
+				System.out.println("输入格式错误，请输入数字！");
+		        sc.nextLine();
+			}
+		}
 	}
 }
 /*
