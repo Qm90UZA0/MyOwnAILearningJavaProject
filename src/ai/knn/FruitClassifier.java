@@ -4,8 +4,12 @@ import ai.core.*;
 import ai.model.Fruit;
 import ai.util.FileUtil;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class FruitClassifier {
@@ -41,6 +45,47 @@ public class FruitClassifier {
 		return classify(newWeight, newColor).split(" ")[0];
 	}
 	
+	public String knn(double newWeight, double newColor, int k) {
+		if (k > samples.size()) {
+			k=samples.size();
+		}
+		
+		List<DistanceEntry> entries = new ArrayList<>();
+		for (Fruit f : samples) {
+			double dist = dc.calculateDistance(f, newWeight, newColor);
+			entries.add(new DistanceEntry(f, dist));
+		}
+		
+		Collections.sort(entries, (e1, e2) -> Double.compare(e1.distance, e2.distance));
+		
+		Map<String, Integer> votes = new HashMap<>();
+		for (int i=0; i<k; i++) {
+			String label = entries.get(i).fruit.getLabel();
+			votes.put(label, votes.getOrDefault(label, 0) + 1);
+		}
+		
+		String winner = "";
+		int maxVotes = -1;
+		for (Map.Entry<String, Integer> entry : votes.entrySet()) {
+			if (entry.getValue() > maxVotes) {
+				maxVotes = entry.getValue();
+				winner = entry.getKey();
+			}
+		}
+		
+		return (winner + " (票数: " + votes + ", k=" + k + ")");
+	}
+	
+	private static class DistanceEntry {
+		Fruit fruit;
+		double distance;
+		
+		DistanceEntry(Fruit fruit, double distance) {
+			this.fruit = fruit;
+			this.distance = distance;
+		}
+	}
+	
 	public static void main(String[] args) {
 		List<Fruit> samples = FileUtil.loadFruits("data/fruits.txt");
 		if (samples.isEmpty()) {
@@ -67,6 +112,8 @@ public class FruitClassifier {
 				}
 				System.out.print("请输入颜色值(1.0=红, 2.0=橙):");
 				double color = sc.nextDouble();
+				System.out.print("请输入k值(最近邻居数):");
+				int k = sc.nextInt();
 				
 				System.out.println("\n分析结果:");
 				
@@ -79,6 +126,8 @@ public class FruitClassifier {
 				System.out.println(" 新水果信息：重量=" + weight + "g, 颜色值=" + color);
 				System.out.println(" 分类结果：" + fce.classify(weight, color));
 				System.out.println(" 预测标签：" + fce.predict(weight, color) + "\n");
+				
+				System.out.println(" KNN结果(k=" + k + "): " + fcm.knn(weight, color, k));
 			} catch (InputMismatchException e) {
 				System.out.println("输入格式错误，请输入数字！");
 		        sc.nextLine();
