@@ -2,7 +2,6 @@ package ai.regression;
 
 import ai.model.House;
 import ai.util.FileUtil;
-
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
@@ -55,6 +54,9 @@ public class LinearRegressor {
 	public void printModel() {
 		System.out.println("当前模型：价格 = " + w + " * 面积 + " + b);
 	}
+	
+	public double getW() {return w;}
+	public double getB() {return b;}
 	
 	
 	public static void main(String[] args) {

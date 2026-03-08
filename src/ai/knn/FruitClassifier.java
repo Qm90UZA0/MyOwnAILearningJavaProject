@@ -3,7 +3,6 @@ package ai.knn;
 import ai.core.*;
 import ai.model.Fruit;
 import ai.util.FileUtil;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
