@@ -1,7 +1,6 @@
 package ai.util;
 
-import ai.model.Fruit;
-import ai.model.House;
+import ai.model.*;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -64,6 +63,38 @@ public class FileUtil {
 							          Double.parseDouble(parts[1])));
 			}
 		} catch (FileNotFoundException e) {
+			System.out.println("文件不存在：" + filePath);
+		} catch (IOException e) {
+			System.out.println("读取文件时出错：" + e.getMessage());
+		} catch (NumberFormatException e) {
+			System.out.println("错误：数字格式不正确 - " + e.getMessage());
+		}
+		
+		return samples;
+	}
+	
+	public static List<Student> loadStudents(String filePath){
+		List<Student> samples = new ArrayList<>();
+		
+		try (BufferedReader reader = new BufferedReader(new FileReader(filePath))){
+			String line;
+			while ((line = reader.readLine()) != null) {
+				if (line.trim().isEmpty()) {
+					continue;
+				}
+				
+				String[] parts = line.split(",");
+				
+				if (parts.length != 3) {
+					System.out.println("跳过格式错误的行：" + line);
+					continue;
+				}
+				
+				samples.add(new Student(Double.parseDouble(parts[0]),
+						                Double.parseDouble(parts[1]),
+						                Integer.parseInt(parts[2])));
+			}
+		}catch (FileNotFoundException e) {
 			System.out.println("文件不存在：" + filePath);
 		} catch (IOException e) {
 			System.out.println("读取文件时出错：" + e.getMessage());
